@@ -28,3 +28,5 @@ select next_day('4-nov-1999','wednesday') from dual;
 --converstion func
 select to_char(sysdate,'DD-MM-YY') from dual;
 select to_char(sysdate,'Day') from dual;
+select to_char(hire_date,'Day') from hr.employees;
+select * from hr.employees where to_char(hire_date,'Day')  =  'Saturday ';
