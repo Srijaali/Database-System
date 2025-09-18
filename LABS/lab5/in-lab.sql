@@ -28,5 +28,12 @@ select e.name, e.id, e.d_no, d.d_num, d.d_name
 from employees e
 cross join departments d;
 
+q2)
+
+select e.name, e.id, e.d_no, d.d_num, d.d_name
+from departments d
+left join employees e on d.d_num = e.d_no
+order by d.D_NUM;
+
 
 
