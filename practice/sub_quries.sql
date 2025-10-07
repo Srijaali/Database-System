@@ -75,6 +75,47 @@ where (star,director,gross) in (
                 order by sum(gross) asc);
 
 --correlated query
+select*from movies m1
+where score>(select avg(score) from movies m2 where m2.genre=m1.genre);
+
+-- subquery with select
+select name,(votes/(select sum(votes) from movies))*100 from movies;
+
+select name,genre,score,(select avg(score) from movies m2 where m2.genre=m1.genre)
+from movies m1;
+
+-- subquery with from
 
 
-   
+--group by
+select department_id,avg(salary) as avge 
+from employees
+group by department_id;
+
+-- group by / having
+select department_id,min(salary) as minin
+from employees
+group by department_id
+having min(salary) < 15000
+order by department_id desc;
+
+select genre,avg(score)
+from movies
+group by genre
+having avg(score) > (select avg(score) from movies);
+
+--subquery with insert
+insert into loyal
+(user_id,name) 
+select user_id,count(*)
+from orders t1
+join users t2 on t1.user_id = t2.user_id
+group by user_id
+having count(*) >3;
+
+-- subquery with update
+update loyal
+set money = (select user_id,sum(amount)*100
+            from orders
+            group by user_id);
+             
