@@ -182,3 +182,18 @@ BEFORE/AFTER INSERT/UPDATE/DELETE
 ON table
 FOR EACH ROW
 
+--exam
+
+
+create or replace trigger check_available_seats
+before update of available_seats
+on courses
+for each row
+begin
+if :NEW.available_seats < 3
+then insert into course_alert(course_id,curr_seats,alert_msg,alert_date) values 
+(:NEW.course_id,:NEW.available_seats,'low seats',sysdate);
+end if;
+end;
+/
+
