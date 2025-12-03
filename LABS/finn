@@ -182,8 +182,6 @@ BEFORE/AFTER INSERT/UPDATE/DELETE
 ON table
 FOR EACH ROW
 
---exam
-
 
 create or replace trigger check_available_seats
 before update of available_seats
@@ -197,3 +195,177 @@ end if;
 end;
 /
 
+BEGIN
+
+   INSERT INTO students VALUES (1,'Ali','ali@email.com');
+
+   INSERT INTO enrollments VALUES (101,1,2,SYSDATE);
+
+   UPDATE courses
+   SET available_seats = available_seats - 1
+   WHERE course_id = 2;
+
+   INSERT INTO payments VALUES (201,101,SYSDATE,5000);
+
+   INSERT INTO enrollment_log VALUES (301,101,'Enrollment completed');
+
+   COMMIT;
+
+EXCEPTION
+
+   WHEN OTHERS THEN
+      ROLLBACK;
+      DBMS_OUTPUT.PUT_LINE('Transaction failed. Everything rolled back.');
+
+END;
+/
+
+
+create or replace trigger stock_threshold_check
+before update of stock_qunatity
+on PRODUCTS
+for each row
+begin
+if :NEW.stock_qunatity < 5
+then 
+insert into Stock_Alert(product_id,curr_stock,alert_msg,alertdate) values
+(:NEW.product_id,:NEW.stock_qunatity,'low stock',sysdate);
+end if;
+end;
+/
+
+-- sequnce id generation
+CREATE SEQUENCE stock_alert_seq
+START WITH 1
+INCREMENT BY 1;
+
+-- use
+stock_alert_seq.NEXTVAL;
+
+
+-- transaction
+SET SERVEROUTPUT ON;
+
+BEGIN
+
+   --------------------------------------------------
+   -- STEP 1: INSERT NEW GUEST
+   --------------------------------------------------
+   INSERT INTO guests
+   VALUES (1, 'Ali Khan', 'ali@gmail.com');
+
+   --------------------------------------------------
+   -- STEP 2: SELECT ROOM
+   --------------------------------------------------
+   -- Sample room assumed to exist (room_id = 101)
+   --------------------------------------------------
+
+   --------------------------------------------------
+   -- STEP 3: MAKE RESERVATION
+   --------------------------------------------------
+   INSERT INTO reservations
+   VALUES (1,  -- reservation_id
+           1,  -- guest_id
+           101, -- room_id
+           SYSDATE,
+           SYSDATE + 2);
+
+   --------------------------------------------------
+   -- STEP 4: PROCESS PAYMENT
+   --------------------------------------------------
+   INSERT INTO payments
+   VALUES (1,
+           1,   -- reservation_id
+           15000);
+
+   --------------------------------------------------
+   -- STEP 5: LOG ACTION
+   --------------------------------------------------
+   INSERT INTO reservation_log
+   VALUES (1,
+           1,
+           'Reservation created successfully');
+
+   --------------------------------------------------
+   -- STEP 6: COMMIT
+   --------------------------------------------------
+   COMMIT;
+
+   DBMS_OUTPUT.PUT_LINE('Reservation transaction completed successfully.');
+
+--------------------------------------------------
+-- STEP 7: ROLLBACK ON FAILURE
+--------------------------------------------------
+EXCEPTION
+   WHEN OTHERS THEN
+      ROLLBACK;
+      DBMS_OUTPUT.PUT_LINE('Transaction failed. All changes rolled back.');
+END;
+/
+
+
+-- plsql
+begin
+create procedure RecordSale(
+p_product_id in number,
+p_sale_amount in number )
+is v_count number;
+v_stock number;
+begin
+
+select count(*)
+into v_count
+from products where product_id = p_prodcut_id;
+
+if v_count = 0 then dbms_output.put_line('inn');
+return;
+end if;
+
+select stock_qunatity
+into v_stcok
+from products where prod_id=p_prod_id;
+
+if p_sale>v_stock then dbms_output.put_line('loe');
+return;
+end if;
+
+ UPDATE products
+   SET stock_quantity = stock_quantity - p_sale_amount
+   WHERE product_id = p_product_id;
+
+   INSERT INTO sales
+   VALUES (sales_seq.NEXTVAL,
+           p_product_id,
+           SYSDATE,
+           p_sale_amount);
+
+   COMMIT;
+
+   DBMS_OUTPUT.PUT_LINE('Sale recorded successfully.');
+
+EXCEPTION
+   WHEN OTHERS THEN
+      ROLLBACK;
+      DBMS_OUTPUT.PUT_LINE('Error occurred. Transaction rolled back.');
+END;
+/
+
+-- func
+CREATE OR REPLACE FUNCTION GetTotalSalesAmount
+(
+   p_product_id IN NUMBER
+)
+RETURN NUMBER
+IS
+   v_total_sales NUMBER;
+BEGIN
+
+   SELECT NVL(SUM(sale_amount),0)
+   INTO v_total_sales
+   FROM sales
+   WHERE product_id = p_product_id;
+
+   RETURN v_total_sales;
+
+END;
+/
