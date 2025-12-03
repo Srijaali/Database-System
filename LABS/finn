@@ -1,0 +1,184 @@
+SET SERVEROUTPUT ON;
+
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('happyyyy');
+END;
+/
+
+DECLARE
+name varchar(20);
+age number;
+BEGIN
+name := 'rija';
+age := 20;
+DBMS_OUTPUT.PUT_LINE(name);
+DBMS_OUTPUT.PUT_LINE(age);
+END;
+/
+
+DECLARE
+a integer := 2;
+b integer := 3;
+c integer := 4;
+f real;
+BEGIN
+c := a+b;
+f := 70.0/3.0;
+
+dbms_output.put_line('c is: ' || c);
+dbms_output.put_line('f is: ' || f);
+END;
+
+DECLARE 
+num1 number := 20;
+num2 number := 30;
+BEGIN
+dbms_output.put_line(num1);
+dbms_output.put_line(num2);
+    DECLARE
+    num1 number := 50;
+    num2 number := 80;
+    BEGIN
+    dbms_output.put_line(num1);
+    dbms_output.put_line(num2);
+    END;
+END;
+/
+select*from hr.employees;
+
+DECLARE
+e_id hr.employees.employee_id%TYPE;
+e_fn hr.employees.first_name%TYPE;
+e_ln hr.employees.last_name%TYPE;
+BEGIN
+select employee_id,first_name,last_name
+into e_id,e_fn,e_ln
+from hr.employees
+where employee_id = 100;
+dbms_output.put_line(e_fn || ' ' || e_ln);
+END;
+
+if (salary >= 5000) then
+dbms_output.put_line('salary suff');
+end if;
+
+
+begin
+for i in 1..6 LOOP
+dbms_output.put_line(i);
+END LOOP;
+END;
+
+create or replace view emp_det as
+select e.employee_id , e.first_name , d.department_name
+from hr.employees e
+join hr.departments d
+on e.department_id = d.department_id;
+
+
+create materialized view mat_emp_det as
+select employee_id,first_name
+from hr.employees
+where department_id = 80;
+
+select * from emp_det;
+
+select*from mat_emp_det;
+
+select*from hr.employees where department_id = 80;
+
+
+CREATE OR REPLACE FUNCTION CalculateSAL
+(DEPT_ID IN NUMBER)
+RETURN NUMBER
+IS
+   Total_Salary NUMBER;
+BEGIN
+   SELECT SUM(Salary)
+   INTO Total_Salary
+   FROM employees
+   WHERE department_id = DEPT_ID;
+
+   RETURN Total_Salary;
+END;
+/
+SELECT CalculateSAL(80) FROM dual;
+
+
+create or replace trigger emp_insert_trg
+after insert
+on hr.employees
+for each row
+begin dbms_output.put_line('emp add: ' || :NEW.first_name);
+END;
+/
+
+select * from hr.employees;
+
+insert into hr.employees(employee_id,first_name,last_name,email,hire_date,department_id,job_id)  values(1,'ali','raza','aliraza@gmail.com','10-JUN-2021',80,1);
+
+create or replace trigger emp_sal_update
+before update of salary
+on hr.employees
+for each row
+begin
+dbms_output.put_line('salary changed: ' || :OLD.salary || 'to' || :NEW.salary);
+END;
+
+
+update hr.employees set salary = 6700
+where employee_id = 100;
+
+
+create or replace trigger check_salary
+before update or insert 
+on hr.employees
+for each row
+begin
+if :NEW.salary < 0 then
+RAISE_APPLICATION_ERROR(-2001,'salary cant be negative');
+END IF;
+END;
+
+update hr.employees set salary = 6000
+where employee_id = 100;
+
+SET SERVEROUTPUT ON;
+UPDATE hr.employees
+SET salary =-2
+WHERE employee_id = 100;
+
+
+rollback
+
+select* from hr.employees
+
+--on
+SET SERVEROUTPUT ON;
+--print
+DBMS_OUTPUT.PUT_LINE('text');
+--block
+DECLARE
+BEGIN
+END;
+/
+-- loop
+FOR i IN 1..10 LOOP
+END LOOP;
+-- if
+IF condition THEN
+ELSIF condition THEN
+ELSE
+END IF;
+-- select
+SELECT col INTO variable FROM table WHERE condition;
+-- func
+CREATE OR REPLACE FUNCTION fname RETURN datatype
+-- proc
+CREATE OR REPLACE PROCEDURE pname IS
+-- trigger
+CREATE OR REPLACE TRIGGER tname
+BEFORE/AFTER INSERT/UPDATE/DELETE
+ON table
+FOR EACH ROW
+
